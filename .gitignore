@@ -1,0 +1,17 @@
+node_modules
+dist
+out
+.DS_Store
+.eslintcache
+*.log*
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Windows
+Thumbs.db
+
+# Test (Phase 3)
+coverage
