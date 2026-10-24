@@ -1,6 +1,7 @@
 {
   "extends": "@electron-toolkit/tsconfig/tsconfig.json",
   "include": ["src/core/**/*"],
+  "exclude": ["src/core/**/*.test.ts"],
   "compilerOptions": {
     "composite": true,
     "lib": ["ESNext"],
