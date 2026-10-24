@@ -1,10 +1,21 @@
 {
   "name": "umusic",
-  "version": "1.0.0",
-  "description": "An Electron application with React and TypeScript",
+  "version": "0.0.0",
+  "description": "A YouTube music client for desktop.",
   "main": "./out/main/index.js",
-  "author": "example.com",
-  "homepage": "https://electron-vite.org",
+  "author": "Esperanza Fornes Borja",
+  "homepage": "https://github.com/nesssB/uMusic",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nesssB/uMusic.git"
+  },
+  "bugs": {
+    "url": "https://github.com/nesssB/uMusic/issues"
+  },
+  "license": "GPL-3.0-or-later",
+  "engines": {
+    "node": ">=24"
+  },
   "scripts": {
     "format": "prettier --write .",
     "lint": "eslint --cache .",
@@ -28,7 +39,7 @@
     "@electron-toolkit/eslint-config-prettier": "^3.0.1",
     "@electron-toolkit/eslint-config-ts": "^4.0.0",
     "@electron-toolkit/tsconfig": "^2.0.0",
-    "@types/node": "^24.19.2",
+    "@types/node": "24.19.2",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.1.2",
