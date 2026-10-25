@@ -11,7 +11,8 @@ export function createYTMusicWindow(): BrowserWindow {
     webPreferences: {
       sandbox: true,
       contextIsolation: true,
-      nodeIntegration: false
+      nodeIntegration: false,
+      partition: 'persist:ytmusic'
     }
   })
 
