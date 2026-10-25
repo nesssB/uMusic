@@ -1,5 +1,11 @@
 import { session, shell, BrowserWindow, Session } from 'electron'
+import { getNavigationTarget, NavigationTarget } from '@core/navigation'
 import icon from '../../../resources/icon.png?asset'
+
+function navigationTarget(url: string): NavigationTarget {
+  const parsed = URL.parse(url)
+  return parsed ? getNavigationTarget(parsed) : 'blocked'
+}
 
 let ytSession: Session | undefined
 
@@ -43,8 +49,18 @@ export function createYTMusicWindow(): BrowserWindow {
     window.show()
   })
 
-  window.webContents.setWindowOpenHandler((details) => {
-    shell.openExternal(details.url)
+  window.webContents.on('will-navigate', (event) => {
+    const target = navigationTarget(event.url)
+    if (target === 'app') return
+
+    event.preventDefault()
+    if (target === 'browser') shell.openExternal(event.url)
+  })
+
+  window.webContents.setWindowOpenHandler(({ url }) => {
+    const target = navigationTarget(url)
+    if (target === 'app') window.loadURL(url)
+    if (target === 'browser') shell.openExternal(url)
     return { action: 'deny' }
   })
 
