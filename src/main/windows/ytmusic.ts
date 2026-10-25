@@ -1,5 +1,4 @@
 import { shell, BrowserWindow } from 'electron'
-import { join } from 'path'
 import icon from '../../../resources/icon.png?asset'
 
 export function createYTMusicWindow(): BrowserWindow {
@@ -10,8 +9,9 @@ export function createYTMusicWindow(): BrowserWindow {
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
-      preload: join(__dirname, '../preload/index.js'),
-      sandbox: false
+      sandbox: true,
+      contextIsolation: true,
+      nodeIntegration: false
     }
   })
 
