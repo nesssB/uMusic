@@ -1,5 +1,7 @@
 import { app, BrowserWindow, ipcMain } from 'electron'
 import { electronApp, optimizer } from '@electron-toolkit/utils'
+import { createMediaControls } from './media-controls'
+import { setUpThumbar } from './thumbar'
 import { createTray } from './tray'
 import { createYTMusicWindow } from './windows/ytmusic'
 
@@ -28,8 +30,9 @@ function showYTMusicWindow(): void {
 // Called when Electron has finished initialization and is ready to create
 // browser windows. Some APIs can only be used after this event occurs.
 function onReady(): void {
-  // Set app user model id for windows
-  electronApp.setAppUserModelId('com.electron')
+  // Windows groups the taskbar button and names the app in its media
+  // overlay by this id. It must match appId in electron-builder.yml.
+  electronApp.setAppUserModelId('io.github.nesssb.umusic')
 
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.
@@ -41,7 +44,10 @@ function onReady(): void {
   // IPC test
   ipcMain.on('ping', () => console.log('pong'))
 
-  createTray(createYTMusicWindow())
+  const window = createYTMusicWindow()
+  const media = createMediaControls(window)
+  createTray(window, media)
+  setUpThumbar(window, media)
 
   // On macOS, clicking the dock icon brings back the window hidden by closing.
   app.on('activate', showYTMusicWindow)

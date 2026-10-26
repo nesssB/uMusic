@@ -1,4 +1,6 @@
-import { app, nativeImage, BrowserWindow, Menu, Tray } from 'electron'
+import { app, nativeImage, BrowserWindow, Menu, MenuItemConstructorOptions, Tray } from 'electron'
+import { describeTrack } from '@core/media'
+import { MediaControls } from './media-controls'
 import icon from '../../resources/icon.png?asset'
 
 // Kept at module level so the tray is not garbage collected.
@@ -26,7 +28,29 @@ function toggleWindow(window: BrowserWindow): void {
   else showWindow(window)
 }
 
-export function createTray(window: BrowserWindow): Tray {
+// Menus read "&" as the start of an access key, so a title like
+// "Simon & Garfunkel" would lose it.
+function escapeMenuLabel(label: string): string {
+  return label.replaceAll('&', '&&')
+}
+
+function mediaMenuItems(media: MediaControls): MenuItemConstructorOptions[] {
+  const { track, playing } = media.getState()
+  const enabled = track !== null
+  return [
+    ...(track
+      ? [
+          { label: escapeMenuLabel(describeTrack(track)), enabled: false },
+          { type: 'separator' as const }
+        ]
+      : []),
+    { label: 'Previous', enabled, click: () => media.send('previous') },
+    { label: playing ? 'Pause' : 'Play', enabled, click: () => media.send('playpause') },
+    { label: 'Next', enabled, click: () => media.send('next') }
+  ]
+}
+
+export function createTray(window: BrowserWindow, media: MediaControls): Tray {
   if (tray) return tray
 
   // Closing the window only hides it, so playback keeps going. The app
@@ -46,13 +70,16 @@ export function createTray(window: BrowserWindow): Tray {
   })
 
   const created = new Tray(trayIcon())
-  created.setToolTip('uMusic')
 
   // Linux trays only pick up menu changes through setContextMenu, so the
   // menu is rebuilt instead of updating the item's label in place.
   const updateMenu = (): void => {
+    const { track } = media.getState()
+    created.setToolTip(track ? describeTrack(track) : 'uMusic')
     created.setContextMenu(
       Menu.buildFromTemplate([
+        ...mediaMenuItems(media),
+        { type: 'separator' },
         {
           label: isShown(window) ? 'Hide uMusic' : 'Show uMusic',
           click: () => toggleWindow(window)
@@ -66,6 +93,7 @@ export function createTray(window: BrowserWindow): Tray {
   window.on('hide', updateMenu)
   window.on('minimize', updateMenu)
   window.on('restore', updateMenu)
+  media.onChange(updateMenu)
   updateMenu()
 
   created.on('click', () => toggleWindow(window))
