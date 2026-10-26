@@ -1,10 +1,16 @@
 import { session, shell, BrowserWindow, Session } from 'electron'
 import { getNavigationTarget, NavigationTarget } from '@core/navigation'
+import { isPermissionAllowed } from '@core/permissions'
 import icon from '../../../resources/icon.png?asset'
 
 function navigationTarget(url: string): NavigationTarget {
   const parsed = URL.parse(url)
   return parsed ? getNavigationTarget(parsed) : 'blocked'
+}
+
+function permissionAllowed(permission: string, url: string): boolean {
+  const parsed = URL.parse(url)
+  return parsed ? isPermissionAllowed(permission, parsed) : false
 }
 
 let ytSession: Session | undefined
@@ -25,6 +31,15 @@ function getYTMusicSession(): Session {
       created.cookies.flushStore()
     }, 1000)
   })
+
+  // Electron grants every permission by default. Pages usually check a
+  // permission before requesting it, so both handlers are needed.
+  created.setPermissionRequestHandler((_webContents, permission, callback, details) => {
+    callback(permissionAllowed(permission, details.requestingUrl))
+  })
+  created.setPermissionCheckHandler((_webContents, permission, requestingOrigin) =>
+    permissionAllowed(permission, requestingOrigin)
+  )
 
   ytSession = created
   return created

@@ -38,6 +38,15 @@ linux:
 appImage:
   artifactName: ${name}-${version}.${ext}
 npmRebuild: false
+# Only apply to packaged builds, not to `npm run dev`.
+electronFuses:
+  runAsNode: false
+  # One-way: turning it off later corrupts the stored sign-in.
+  enableCookieEncryption: true
+  enableNodeOptionsEnvironmentVariable: false
+  enableNodeCliInspectArguments: false
+  onlyLoadAppFromAsar: true
+  grantFileProtocolExtraPrivileges: false
 publish:
   provider: generic
   url: https://example.com/auto-updates
