@@ -1,5 +1,6 @@
 import { app, BrowserWindow, ipcMain } from 'electron'
 import { electronApp, optimizer } from '@electron-toolkit/utils'
+import { createTray } from './tray'
 import { createYTMusicWindow } from './windows/ytmusic'
 
 // A second instance would open another window on the same persist:ytmusic
@@ -40,13 +41,10 @@ function onReady(): void {
   // IPC test
   ipcMain.on('ping', () => console.log('pong'))
 
-  createYTMusicWindow()
+  createTray(createYTMusicWindow())
 
-  app.on('activate', function () {
-    // On macOS it's common to re-create a window in the app when the
-    // dock icon is clicked and there are no other windows open.
-    if (BrowserWindow.getAllWindows().length === 0) createYTMusicWindow()
-  })
+  // On macOS, clicking the dock icon brings back the window hidden by closing.
+  app.on('activate', showYTMusicWindow)
 }
 
 // Quit when all windows are closed, except on macOS. There, it's common
