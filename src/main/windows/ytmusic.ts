@@ -1,4 +1,5 @@
 import { session, shell, BrowserWindow, Session } from 'electron'
+import { isAdRequest } from '@core/adblock'
 import { getNavigationTarget, NavigationTarget } from '@core/navigation'
 import { isPermissionAllowed } from '@core/permissions'
 import icon from '../../../resources/icon.png?asset'
@@ -11,6 +12,11 @@ function navigationTarget(url: string): NavigationTarget {
 function permissionAllowed(permission: string, url: string): boolean {
   const parsed = URL.parse(url)
   return parsed ? isPermissionAllowed(permission, parsed) : false
+}
+
+function adRequest(url: string): boolean {
+  const parsed = URL.parse(url)
+  return parsed ? isAdRequest(parsed) : false
 }
 
 let ytSession: Session | undefined
@@ -40,6 +46,10 @@ function getYTMusicSession(): Session {
   created.setPermissionCheckHandler((_webContents, permission, requestingOrigin) =>
     permissionAllowed(permission, requestingOrigin)
   )
+
+  created.webRequest.onBeforeRequest((details, callback) => {
+    callback({ cancel: adRequest(details.url) })
+  })
 
   ytSession = created
   return created
