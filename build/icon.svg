@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FF5A4E"/>
+      <stop offset="1" stop-color="#B3123A"/>
+    </linearGradient>
+    <linearGradient id="shine" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.18"/>
+      <stop offset="0.5" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="64" y="64" width="896" height="896" rx="208" fill="url(#bg)"/>
+  <rect x="64" y="64" width="896" height="896" rx="208" fill="url(#shine)"/>
+
+  <!-- A "u" whose right stem rises into an eighth-note flag. -->
+  <g transform="translate(-44 28)" fill="none" stroke="#FFFFFF" stroke-width="104"
+     stroke-linecap="round" stroke-linejoin="round">
+    <path d="M352 340 V560 A160 160 0 0 0 672 560 V236 C752 262 812 318 800 424"/>
+  </g>
+</svg>
