@@ -3,6 +3,7 @@ import { electronApp, optimizer } from '@electron-toolkit/utils'
 import { createMediaControls } from './media-controls'
 import { setUpThumbar } from './thumbar'
 import { createTray } from './tray'
+import { createUpdater } from './updater'
 import { createYTMusicWindow } from './windows/ytmusic'
 
 // A second instance would open another window on the same persist:ytmusic
@@ -43,7 +44,8 @@ function onReady(): void {
 
   const window = createYTMusicWindow()
   const media = createMediaControls(window)
-  createTray(window, media)
+  const updater = createUpdater()
+  createTray(window, media, updater)
   setUpThumbar(window, media)
 
   // On macOS, clicking the dock icon brings back the window hidden by closing.

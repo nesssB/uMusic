@@ -1,0 +1,6 @@
+# Read instead of app-update.yml when a dev build runs with
+# UMUSIC_DEV_UPDATES=1. See src/main/updater.ts.
+provider: github
+owner: nesssB
+repo: uMusic
+updaterCacheDirName: umusic-updater

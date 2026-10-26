@@ -1,6 +1,7 @@
 import { app, nativeImage, BrowserWindow, Menu, MenuItemConstructorOptions, Tray } from 'electron'
 import { describeTrack } from '@core/media'
 import { MediaControls } from './media-controls'
+import { Updater } from './updater'
 import icon from '../../resources/icon.png?asset'
 
 // Kept at module level so the tray is not garbage collected.
@@ -50,7 +51,17 @@ function mediaMenuItems(media: MediaControls): MenuItemConstructorOptions[] {
   ]
 }
 
-export function createTray(window: BrowserWindow, media: MediaControls): Tray {
+function updaterMenuItems(updater: Updater): MenuItemConstructorOptions[] {
+  const state = updater.getState()
+  if (state.status === 'none') return []
+  const label =
+    state.status === 'ready'
+      ? `Restart to Update (${state.version})`
+      : `Download uMusic ${state.version}`
+  return [{ label, click: () => updater.apply() }, { type: 'separator' }]
+}
+
+export function createTray(window: BrowserWindow, media: MediaControls, updater: Updater): Tray {
   if (tray) return tray
 
   // Closing the window only hides it, so playback keeps going. The app
@@ -85,6 +96,7 @@ export function createTray(window: BrowserWindow, media: MediaControls): Tray {
           click: () => toggleWindow(window)
         },
         { type: 'separator' },
+        ...updaterMenuItems(updater),
         { label: 'Quit uMusic', click: () => app.quit() }
       ])
     )
@@ -94,6 +106,7 @@ export function createTray(window: BrowserWindow, media: MediaControls): Tray {
   window.on('minimize', updateMenu)
   window.on('restore', updateMenu)
   media.onChange(updateMenu)
+  updater.onChange(updateMenu)
   updateMenu()
 
   created.on('click', () => toggleWindow(window))
