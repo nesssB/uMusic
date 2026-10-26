@@ -64,6 +64,12 @@ export function createYTMusicWindow(): BrowserWindow {
     window.show()
   })
 
+  // YouTube Music sets a beforeunload handler while playing. A browser would
+  // ask "Leave site?", but Electron silently cancels the close instead.
+  window.webContents.on('will-prevent-unload', (event) => {
+    event.preventDefault()
+  })
+
   window.webContents.on('will-navigate', (event) => {
     const target = navigationTarget(event.url)
     if (target === 'app') return
