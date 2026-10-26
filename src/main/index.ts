@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain } from 'electron'
+import { app, BrowserWindow } from 'electron'
 import { electronApp, optimizer } from '@electron-toolkit/utils'
 import { createMediaControls } from './media-controls'
 import { setUpThumbar } from './thumbar'
@@ -40,9 +40,6 @@ function onReady(): void {
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
   })
-
-  // IPC test
-  ipcMain.on('ping', () => console.log('pong'))
 
   const window = createYTMusicWindow()
   const media = createMediaControls(window)
