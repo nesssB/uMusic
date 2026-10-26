@@ -31,7 +31,6 @@ dmg:
 linux:
   target:
     - AppImage
-    - snap
     - deb
   maintainer: electronjs.org
   category: Utility
@@ -48,5 +47,4 @@ electronFuses:
   onlyLoadAppFromAsar: true
   grantFileProtocolExtraPrivileges: false
 publish:
-  provider: generic
-  url: https://example.com/auto-updates
+  provider: github

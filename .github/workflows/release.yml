@@ -1,0 +1,79 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  TAG: ${{ github.ref_name }}
+
+jobs:
+  # The release stays a draft until every platform has uploaded, so the updater
+  # never sees a release that is missing its latest*.yml.
+  draft:
+    name: Create draft release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Check tag matches package.json version
+        run: |
+          version="v$(node -p 'require("./package.json").version')"
+          if [ "$TAG" != "$version" ]; then
+            echo "::error::Tag $TAG does not match package.json version $version"
+            exit 1
+          fi
+
+      # Re-runs reuse the existing draft; electron-builder overwrites its assets.
+      - run: |
+          gh release view "$TAG" >/dev/null 2>&1 ||
+            gh release create "$TAG" --draft --verify-tag --title "$TAG" --generate-notes
+
+  build:
+    name: Build (${{ matrix.os }})
+    needs: draft
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            build: npm run build:linux -- --publish always
+          - os: windows-latest
+            build: npm run build:win -- --publish always
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - run: ${{ matrix.build }}
+
+  publish:
+    name: Publish release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check update metadata was uploaded
+        run: |
+          assets="$(gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json assets --jq '.assets[].name')"
+          echo "$assets"
+          for file in latest.yml latest-linux.yml; do
+            if ! grep -qx "$file" <<<"$assets"; then
+              echo "::error::$file is missing from release $TAG"
+              exit 1
+            fi
+          done
+
+      - run: gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --draft=false --latest
