@@ -18,7 +18,11 @@ A desktop client for YouTube Music, built with Electron, React and TypeScript.
 
 ## Status
 
-Early development. There is no release yet, and things will change often.
+Early development, so things will change often. Builds for Linux (AppImage and
+.deb) and Windows are on the
+[releases page](https://github.com/nesssB/uMusic/releases). The AppImage and
+Windows builds update themselves; the .deb lets you know when a new version is
+out.
 
 ## Requirements
 
