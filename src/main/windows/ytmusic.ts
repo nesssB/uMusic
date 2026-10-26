@@ -1,3 +1,4 @@
+import { join } from 'path'
 import { session, shell, BrowserWindow, Session } from 'electron'
 import { isAdRequest } from '@core/adblock'
 import { getNavigationTarget, NavigationTarget } from '@core/navigation'
@@ -66,6 +67,7 @@ export function createYTMusicWindow(): BrowserWindow {
       sandbox: true,
       contextIsolation: true,
       nodeIntegration: false,
+      preload: join(__dirname, '../preload/ytmusic.js'),
       session: getYTMusicSession()
     }
   })

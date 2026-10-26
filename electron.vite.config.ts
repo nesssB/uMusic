@@ -13,6 +13,14 @@ export default defineConfig({
   preload: {
     resolve: {
       alias: coreAlias
+    },
+    build: {
+      rolldownOptions: {
+        input: {
+          index: resolve('src/preload/index.ts'),
+          ytmusic: resolve('src/preload/ytmusic.ts')
+        }
+      }
     }
   },
   renderer: {
