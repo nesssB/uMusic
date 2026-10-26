@@ -2,10 +2,31 @@ import { app, BrowserWindow, ipcMain } from 'electron'
 import { electronApp, optimizer } from '@electron-toolkit/utils'
 import { createYTMusicWindow } from './windows/ytmusic'
 
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
-app.whenReady().then(() => {
+// A second instance would open another window on the same persist:ytmusic
+// partition and play alongside the first. Hand the launch over instead.
+if (!app.requestSingleInstanceLock()) {
+  app.quit()
+} else {
+  app.on('second-instance', () => {
+    if (app.isReady()) showYTMusicWindow()
+  })
+  app.whenReady().then(onReady)
+}
+
+function showYTMusicWindow(): void {
+  const [window] = BrowserWindow.getAllWindows()
+  if (!window) {
+    createYTMusicWindow()
+    return
+  }
+  if (window.isMinimized()) window.restore()
+  window.show()
+  window.focus()
+}
+
+// Called when Electron has finished initialization and is ready to create
+// browser windows. Some APIs can only be used after this event occurs.
+function onReady(): void {
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron')
 
@@ -26,7 +47,7 @@ app.whenReady().then(() => {
     // dock icon is clicked and there are no other windows open.
     if (BrowserWindow.getAllWindows().length === 0) createYTMusicWindow()
   })
-})
+}
 
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
