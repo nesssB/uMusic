@@ -1,3 +1,4 @@
+import { builtinModules } from 'node:module'
 import { defineConfig } from 'eslint/config'
 import tseslint from '@electron-toolkit/eslint-config-ts'
 import eslintConfigPrettier from '@electron-toolkit/eslint-config-prettier'
@@ -26,6 +27,29 @@ export default defineConfig(
     rules: {
       ...eslintPluginReactHooks.configs.recommended.rules,
       ...eslintPluginReactRefresh.configs.vite.rules
+    }
+  },
+  {
+    files: ['src/core/**/*.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: [
+                'electron',
+                '@electron-toolkit/*',
+                'react',
+                'react-dom',
+                'node:*',
+                ...builtinModules
+              ],
+              message: 'src/core must stay pure TypeScript: no Electron, React or Node APIs.'
+            }
+          ]
+        }
+      ]
     }
   },
   eslintConfigPrettier
