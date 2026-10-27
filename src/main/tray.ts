@@ -1,17 +1,38 @@
-import { app, nativeImage, BrowserWindow, Menu, MenuItemConstructorOptions, Tray } from 'electron'
+import {
+  app,
+  nativeImage,
+  nativeTheme,
+  BrowserWindow,
+  Menu,
+  MenuItemConstructorOptions,
+  Tray
+} from 'electron'
 import { describeTrack } from '@core/media'
 import { MediaControls } from './media-controls'
 import { Updater } from './updater'
-import icon from '../../resources/icon.png?asset'
+// The 16px icons have an @2x version next to them, which nativeImage picks up.
+import blackIcon from '../../resources/tray/tray-black.png?asset'
+import whiteIcon from '../../resources/tray/tray-white.png?asset'
+import blackIcon22 from '../../resources/tray/tray-black-22.png?asset'
+import whiteIcon22 from '../../resources/tray/tray-white-22.png?asset'
 
 // Kept at module level so the tray is not garbage collected.
 let tray: Tray | undefined
 
 function trayIcon(): Electron.NativeImage {
-  // The source icon is 512px. Trays draw it at 16px (macOS) or 16-32px
-  // depending on scaling, and some Linux hosts don't downscale it at all.
-  const size = process.platform === 'darwin' ? 16 : 32
-  return nativeImage.createFromPath(icon).resize({ width: size, height: size })
+  // macOS recolors template images to match the menu bar.
+  if (process.platform === 'darwin') {
+    const image = nativeImage.createFromPath(blackIcon)
+    image.setTemplateImage(true)
+    return image
+  }
+  // Light icon on dark panels and the other way round. Linux panels draw
+  // tray icons at 22px, Windows at 16px.
+  const icons =
+    process.platform === 'linux'
+      ? { dark: whiteIcon22, light: blackIcon22 }
+      : { dark: whiteIcon, light: blackIcon }
+  return nativeImage.createFromPath(nativeTheme.shouldUseDarkColors ? icons.dark : icons.light)
 }
 
 function isShown(window: BrowserWindow): boolean {
@@ -81,6 +102,7 @@ export function createTray(window: BrowserWindow, media: MediaControls, updater:
   })
 
   const created = new Tray(trayIcon())
+  nativeTheme.on('updated', () => created.setImage(trayIcon()))
 
   // Linux trays only pick up menu changes through setContextMenu, so the
   // menu is rebuilt instead of updating the item's label in place.
