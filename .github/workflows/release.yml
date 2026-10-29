@@ -32,10 +32,24 @@ jobs:
             exit 1
           fi
 
+      # The notes are the version's section of CHANGELOG.md, from its heading
+      # up to the next version's.
+      - name: Extract release notes from CHANGELOG.md
+        run: |
+          awk -v heading="## ${TAG#v} " '
+            index($0, heading) == 1 { found = 1; next }
+            found && /^## / { exit }
+            found { print }
+          ' CHANGELOG.md > release-notes.md
+          if ! grep -q '[^[:space:]]' release-notes.md; then
+            echo "::error::CHANGELOG.md has no section for ${TAG#v}"
+            exit 1
+          fi
+
       # Re-runs reuse the existing draft; electron-builder overwrites its assets.
       - run: |
           gh release view "$TAG" >/dev/null 2>&1 ||
-            gh release create "$TAG" --draft --verify-tag --title "$TAG" --generate-notes
+            gh release create "$TAG" --draft --verify-tag --title "$TAG" --notes-file release-notes.md
 
   build:
     name: Build (${{ matrix.os }})

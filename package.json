@@ -1,6 +1,6 @@
 {
   "name": "umusic",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A YouTube music client for desktop.",
   "main": "./out/main/index.js",
   "author": "Esperanza Fornes Borja",
