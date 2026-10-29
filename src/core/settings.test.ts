@@ -16,9 +16,11 @@ describe('defaultSettings', () => {
     settings.window.width = 1
     settings.keepPlayingOnClose = false
     settings.keepPlaying = false
+    settings.hideMiniplayer = false
     expect(defaultSettings().window.width).toBe(900)
     expect(defaultSettings().keepPlayingOnClose).toBe(true)
     expect(defaultSettings().keepPlaying).toBe(true)
+    expect(defaultSettings().hideMiniplayer).toBe(true)
   })
 })
 
@@ -38,22 +40,34 @@ describe('parseSettings', () => {
   })
 
   it('reads back what serializeSettings writes', () => {
-    const settings = { window: placedWindow, keepPlayingOnClose: false, keepPlaying: false }
+    const settings = {
+      window: placedWindow,
+      keepPlayingOnClose: false,
+      keepPlaying: false,
+      hideMiniplayer: false
+    }
     expect(parseSettings(JSON.parse(serializeSettings(settings)))).toEqual(settings)
   })
 
   it('replaces only the fields that do not fit the schema', () => {
     expect(
-      parseSettings({ window: placedWindow, keepPlayingOnClose: 'no', keepPlaying: false })
+      parseSettings({
+        window: placedWindow,
+        keepPlayingOnClose: 'no',
+        keepPlaying: false,
+        hideMiniplayer: null
+      })
     ).toEqual({
       window: placedWindow,
       keepPlayingOnClose: true,
-      keepPlaying: false
+      keepPlaying: false,
+      hideMiniplayer: true
     })
     expect(parseSettings({ window: 'big', keepPlayingOnClose: false, keepPlaying: 1 })).toEqual({
       window: defaultSettings().window,
       keepPlayingOnClose: false,
-      keepPlaying: true
+      keepPlaying: true,
+      hideMiniplayer: true
     })
   })
 
