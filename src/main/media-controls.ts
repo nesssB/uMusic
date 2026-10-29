@@ -4,14 +4,17 @@ import {
   MediaCommand,
   MediaState,
   MEDIA_COMMAND_CHANNEL,
+  MEDIA_REPEAT_CHANNEL,
   MEDIA_STATE_CHANNEL,
   parseMediaState
 } from '@core/media'
+import { RepeatMode } from '@core/repeat'
 
 export interface MediaControls {
   getState: () => MediaState
   onChange: (listener: (state: MediaState) => void) => void
   send: (command: MediaCommand) => void
+  setRepeat: (mode: RepeatMode) => void
 }
 
 export function createMediaControls(window: BrowserWindow): MediaControls {
@@ -42,6 +45,7 @@ export function createMediaControls(window: BrowserWindow): MediaControls {
     onChange: (listener) => {
       listeners.push(listener)
     },
-    send: (command) => webContents.send(MEDIA_COMMAND_CHANNEL, command)
+    send: (command) => webContents.send(MEDIA_COMMAND_CHANNEL, command),
+    setRepeat: (mode) => webContents.send(MEDIA_REPEAT_CHANNEL, mode)
   }
 }

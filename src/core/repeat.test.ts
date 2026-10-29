@@ -1,5 +1,15 @@
 import { describe, expect, it } from 'vitest'
-import { nextRepeatMode, parseRepeatAttribute, repeatPresses } from './repeat'
+import { isRepeatMode, nextRepeatMode, parseRepeatAttribute, repeatPresses } from './repeat'
+
+describe('isRepeatMode', () => {
+  it.each(['none', 'all', 'one'])('accepts %s', (value) => {
+    expect(isRepeatMode(value)).toBe(true)
+  })
+
+  it.each([['ALL'], [''], [null], [undefined], [1], [['all']]])('rejects %j', (value) => {
+    expect(isRepeatMode(value)).toBe(false)
+  })
+})
 
 describe('parseRepeatAttribute', () => {
   it.each([
