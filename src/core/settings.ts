@@ -20,6 +20,8 @@ export interface Settings {
   keepPlayingOnClose: boolean
   // Keeps YT Music from pausing to ask whether the user is still there.
   keepPlaying: boolean
+  // Hides the small player YT Music shows away from the player page.
+  hideMiniplayer: boolean
 }
 
 type SettingsData = Record<string, unknown>
@@ -33,7 +35,8 @@ export function defaultSettings(): Settings {
   return {
     window: { x: null, y: null, width: 900, height: 670, maximized: false },
     keepPlayingOnClose: true,
-    keepPlaying: true
+    keepPlaying: true,
+    hideMiniplayer: true
   }
 }
 
@@ -97,7 +100,8 @@ export function parseSettings(raw: unknown): Settings {
   return {
     window: readWindow(data.window) ?? defaults.window,
     keepPlayingOnClose: readBoolean(data.keepPlayingOnClose) ?? defaults.keepPlayingOnClose,
-    keepPlaying: readBoolean(data.keepPlaying) ?? defaults.keepPlaying
+    keepPlaying: readBoolean(data.keepPlaying) ?? defaults.keepPlaying,
+    hideMiniplayer: readBoolean(data.hideMiniplayer) ?? defaults.hideMiniplayer
   }
 }
 

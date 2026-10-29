@@ -2,6 +2,7 @@ import { join } from 'path'
 import { session, shell, BrowserWindow, Session } from 'electron'
 import { isAdRequest } from '@core/adblock'
 import { KEEP_PLAYING_ARG } from '@core/keep-playing'
+import { HIDE_MINIPLAYER_CSS } from '@core/miniplayer'
 import { getNavigationTarget, NavigationTarget } from '@core/navigation'
 import { isPermissionAllowed } from '@core/permissions'
 import { SettingsStore } from '../settings'
@@ -90,6 +91,16 @@ export function createYTMusicWindow(settings: SettingsStore): BrowserWindow {
   // ask "Leave site?", but Electron silently cancels the close instead.
   window.webContents.on('will-prevent-unload', (event) => {
     event.preventDefault()
+  })
+
+  // Inserted CSS is dropped on every load, so it goes in again each time.
+  // The setting is read here, so a change applies from the next load.
+  window.webContents.on('did-finish-load', () => {
+    const url = URL.parse(window.webContents.getURL())
+    if (url?.hostname !== 'music.youtube.com' || !settings.get('hideMiniplayer')) return
+    window.webContents.insertCSS(HIDE_MINIPLAYER_CSS).catch((error) => {
+      console.error('Could not hide the miniplayer:', error)
+    })
   })
 
   window.webContents.on('will-navigate', (event) => {
