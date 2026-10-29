@@ -8,6 +8,7 @@ import {
   Tray
 } from 'electron'
 import { describeTrack } from '@core/media'
+import { RepeatMode, REPEAT_MODES } from '@core/repeat'
 import { MediaControls } from './media-controls'
 import { Updater } from './updater'
 // The 16px icons have an @2x version next to them, which nativeImage picks up.
@@ -84,8 +85,28 @@ function mediaMenuItems(media: MediaControls): MenuItemConstructorOptions[] {
       : []),
     { label: 'Previous', enabled, click: () => media.send('previous') },
     { label: playing ? 'Pause' : 'Play', enabled, click: () => media.send('playpause') },
-    { label: 'Next', enabled, click: () => media.send('next') }
+    { label: 'Next', enabled, click: () => media.send('next') },
+    { type: 'separator' },
+    repeatMenuItem(media)
   ]
+}
+
+const REPEAT_LABELS: Record<RepeatMode, string> = { none: 'Off', all: 'All', one: 'One' }
+
+// The mode can be changed with nothing playing, so this does not depend on
+// the track. It is disabled while the page has no repeat button to press.
+function repeatMenuItem(media: MediaControls): MenuItemConstructorOptions {
+  const { repeat } = media.getState()
+  return {
+    label: 'Repeat',
+    enabled: repeat !== null,
+    submenu: REPEAT_MODES.map((mode) => ({
+      label: REPEAT_LABELS[mode],
+      type: 'radio' as const,
+      checked: mode === repeat,
+      click: () => media.setRepeat(mode)
+    }))
+  }
 }
 
 function updaterMenuItems(updater: Updater): MenuItemConstructorOptions[] {
