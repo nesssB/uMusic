@@ -3,6 +3,8 @@ import { session, shell, BrowserWindow, Session } from 'electron'
 import { isAdRequest } from '@core/adblock'
 import { getNavigationTarget, NavigationTarget } from '@core/navigation'
 import { isPermissionAllowed } from '@core/permissions'
+import { SettingsStore } from '../settings'
+import { initialWindowBounds, trackWindowState } from '../window-state'
 import icon from '../../../resources/icon.png?asset'
 
 function navigationTarget(url: string): NavigationTarget {
@@ -56,10 +58,10 @@ function getYTMusicSession(): Session {
   return created
 }
 
-export function createYTMusicWindow(): BrowserWindow {
+export function createYTMusicWindow(settings: SettingsStore): BrowserWindow {
+  const { maximized } = settings.get('window')
   const window = new BrowserWindow({
-    width: 900,
-    height: 670,
+    ...initialWindowBounds(settings),
     show: false,
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),
@@ -72,7 +74,12 @@ export function createYTMusicWindow(): BrowserWindow {
     }
   })
 
+  trackWindowState(window, settings)
+
+  // Maximizing also shows the window, so it waits until the page has
+  // something to show.
   window.on('ready-to-show', () => {
+    if (maximized) window.maximize()
     window.show()
   })
 
