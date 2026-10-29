@@ -1,6 +1,7 @@
 import { join } from 'path'
 import { session, shell, BrowserWindow, Session } from 'electron'
 import { isAdRequest } from '@core/adblock'
+import { KEEP_PLAYING_ARG } from '@core/keep-playing'
 import { getNavigationTarget, NavigationTarget } from '@core/navigation'
 import { isPermissionAllowed } from '@core/permissions'
 import { SettingsStore } from '../settings'
@@ -70,6 +71,8 @@ export function createYTMusicWindow(settings: SettingsStore): BrowserWindow {
       contextIsolation: true,
       nodeIntegration: false,
       preload: join(__dirname, '../preload/ytmusic.js'),
+      // Read once, so a change applies to the next window.
+      additionalArguments: settings.get('keepPlaying') ? [KEEP_PLAYING_ARG] : [],
       session: getYTMusicSession()
     }
   })

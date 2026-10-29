@@ -1,42 +1,137 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
-import { ActivityScope, installActivityKeeper } from './keep-playing'
+import { describe, expect, it } from 'vitest'
+import {
+  ACTIVITY_REFRESH_INTERVAL,
+  createYouThereFallback,
+  shouldRefreshActivity,
+  YouTherePage
+} from './keep-playing'
 
-describe('installActivityKeeper', () => {
-  afterEach(() => {
-    vi.useRealTimers()
+describe('shouldRefreshActivity', () => {
+  const now = 10 * 60 * 1000
+
+  it('leaves a recent activity time alone', () => {
+    expect(shouldRefreshActivity(now, now)).toBe(false)
+    expect(shouldRefreshActivity(now - ACTIVITY_REFRESH_INTERVAL + 1, now)).toBe(false)
   })
 
-  it('reports the current time as the last activity', () => {
-    vi.useFakeTimers({ now: 1_000 })
-    const scope: ActivityScope = {}
-    installActivityKeeper(scope)
-
-    expect(scope._lact).toBe(1_000)
-    vi.advanceTimersByTime(2 * 60 * 60 * 1000)
-    expect(scope._lact).toBe(1_000 + 2 * 60 * 60 * 1000)
+  it('refreshes an activity time that is at least the maximum age', () => {
+    expect(shouldRefreshActivity(now - ACTIVITY_REFRESH_INTERVAL, now)).toBe(true)
+    expect(shouldRefreshActivity(now - 2 * 60 * 60 * 1000, now)).toBe(true)
+    expect(shouldRefreshActivity(0, now)).toBe(true)
   })
 
-  it('replaces a last activity time the page already set', () => {
-    vi.useFakeTimers({ now: 5_000 })
-    const scope: ActivityScope = { _lact: 1 }
-    installActivityKeeper(scope)
-
-    expect(scope._lact).toBe(5_000)
+  it('takes a different maximum age', () => {
+    expect(shouldRefreshActivity(now - 500, now, 1000)).toBe(false)
+    expect(shouldRefreshActivity(now - 1000, now, 1000)).toBe(true)
   })
 
-  it('ignores the times the page sets later', () => {
-    vi.useFakeTimers({ now: 5_000 })
-    const scope: ActivityScope = {}
-    installActivityKeeper(scope)
-
-    scope._lact = 1
-    expect(scope._lact).toBe(5_000)
+  it('leaves a time from the future alone', () => {
+    expect(shouldRefreshActivity(now + 5000, now)).toBe(false)
   })
 
-  it('lets the page redefine the property without throwing', () => {
-    const scope: ActivityScope = {}
-    installActivityKeeper(scope)
+  it.each([
+    ['missing', undefined],
+    ['null', null],
+    ['a string', '1000'],
+    ['NaN', NaN],
+    ['infinite', -Infinity]
+  ])('refreshes an activity time that is %s', (_, value) => {
+    expect(shouldRefreshActivity(value, now)).toBe(true)
+  })
+})
 
-    expect(() => Object.defineProperty(scope, '_lact', { value: 1 })).not.toThrow()
+function createPage(): YouTherePage & { dialogShowing: boolean; paused: boolean; log: string[] } {
+  return {
+    dialogShowing: false,
+    paused: false,
+    log: [],
+    isDialogShowing() {
+      return this.dialogShowing
+    },
+    confirm() {
+      this.log.push('confirm')
+    },
+    isPaused() {
+      return this.paused
+    },
+    play() {
+      this.log.push('play')
+      this.paused = false
+    }
+  }
+}
+
+describe('createYouThereFallback', () => {
+  it('does nothing while there is no dialog', () => {
+    const page = createPage()
+    const update = createYouThereFallback(page)
+
+    update()
+    page.paused = true
+    update()
+    expect(page.log).toEqual([])
+  })
+
+  it('presses the button once while the dialog shows', () => {
+    const page = createPage()
+    const update = createYouThereFallback(page)
+
+    page.dialogShowing = true
+    page.paused = true
+    update()
+    update()
+    expect(page.log).toEqual(['confirm'])
+  })
+
+  it('resumes playback when the dialog closes with the track still paused', () => {
+    const page = createPage()
+    const update = createYouThereFallback(page)
+
+    page.dialogShowing = true
+    page.paused = true
+    update()
+    page.dialogShowing = false
+    update()
+    expect(page.log).toEqual(['confirm', 'play'])
+  })
+
+  it('does not touch playback when the page resumed it itself', () => {
+    const page = createPage()
+    const update = createYouThereFallback(page)
+
+    page.dialogShowing = true
+    page.paused = true
+    update()
+    page.dialogShowing = false
+    page.paused = false
+    update()
+    expect(page.log).toEqual(['confirm'])
+  })
+
+  it('leaves a later pause by the user alone', () => {
+    const page = createPage()
+    const update = createYouThereFallback(page)
+
+    page.dialogShowing = true
+    update()
+    page.dialogShowing = false
+    update()
+    page.paused = true
+    update()
+    expect(page.log).toEqual(['confirm'])
+  })
+
+  it('answers the dialog again the next time it shows', () => {
+    const page = createPage()
+    const update = createYouThereFallback(page)
+
+    for (let i = 0; i < 2; i++) {
+      page.dialogShowing = true
+      page.paused = true
+      update()
+      page.dialogShowing = false
+      update()
+    }
+    expect(page.log).toEqual(['confirm', 'play', 'confirm', 'play'])
   })
 })

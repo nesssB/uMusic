@@ -18,6 +18,8 @@ export interface Settings {
   window: WindowState
   // Closing the window hides it to the tray, so playback keeps going.
   keepPlayingOnClose: boolean
+  // Keeps YT Music from pausing to ask whether the user is still there.
+  keepPlaying: boolean
 }
 
 type SettingsData = Record<string, unknown>
@@ -30,7 +32,8 @@ export const MIGRATIONS: Record<number, (data: SettingsData) => SettingsData> = 
 export function defaultSettings(): Settings {
   return {
     window: { x: null, y: null, width: 900, height: 670, maximized: false },
-    keepPlayingOnClose: true
+    keepPlayingOnClose: true,
+    keepPlaying: true
   }
 }
 
@@ -93,7 +96,8 @@ export function parseSettings(raw: unknown): Settings {
   const data = migrateSettings(raw, readVersion(raw))
   return {
     window: readWindow(data.window) ?? defaults.window,
-    keepPlayingOnClose: readBoolean(data.keepPlayingOnClose) ?? defaults.keepPlayingOnClose
+    keepPlayingOnClose: readBoolean(data.keepPlayingOnClose) ?? defaults.keepPlayingOnClose,
+    keepPlaying: readBoolean(data.keepPlaying) ?? defaults.keepPlaying
   }
 }
 
