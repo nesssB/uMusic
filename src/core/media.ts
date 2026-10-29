@@ -10,16 +10,24 @@ export interface MediaState {
   playing: boolean
   // Null while the page has no repeat button to read it from.
   repeat: RepeatMode | null
+  // Null while the page has no like button to read it from.
+  liked: boolean | null
 }
 
 export type MediaCommand = 'playpause' | 'previous' | 'next'
 
-export const IDLE_MEDIA_STATE: MediaState = { track: null, playing: false, repeat: null }
+export const IDLE_MEDIA_STATE: MediaState = {
+  track: null,
+  playing: false,
+  repeat: null,
+  liked: null
+}
 
 // IPC channels between the YouTube Music preload and the main process.
 export const MEDIA_STATE_CHANNEL = 'media:state'
 export const MEDIA_COMMAND_CHANNEL = 'media:command'
 export const MEDIA_REPEAT_CHANNEL = 'media:repeat'
+export const MEDIA_LIKE_CHANNEL = 'media:like'
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null
@@ -41,7 +49,9 @@ export function parseMediaState(value: unknown): MediaState | null {
   if (track === undefined) return null
   const { repeat } = value
   if (repeat !== null && !isRepeatMode(repeat)) return null
-  return { track, playing: value.playing, repeat }
+  const { liked } = value
+  if (liked !== null && typeof liked !== 'boolean') return null
+  return { track, playing: value.playing, repeat, liked }
 }
 
 export function describeTrack(track: MediaTrack): string {
