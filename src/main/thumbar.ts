@@ -43,7 +43,9 @@ export function setUpThumbar(window: BrowserWindow, media: MediaControls): void 
     // when it is hidden, so they are set again on every show.
     if (!window.isVisible()) return
     const { track, playing, repeat } = media.getState()
-    const flags = track ? ['enabled'] : ['disabled']
+    // A button is enabled when it has no flags. Electron accepts 'enabled' but
+    // the whole call then fails, leaving the buttons as they were.
+    const flags = track ? [] : ['disabled']
     // Like the player bar's button, repeat shows the current mode and a click
     // moves on to the next one. It works with nothing playing, but needs the
     // page's button to press: without one it shows as off, disabled.
@@ -70,7 +72,7 @@ export function setUpThumbar(window: BrowserWindow, media: MediaControls): void 
       {
         tooltip: REPEAT_TOOLTIPS[repeatShown],
         icon: icons.repeat[repeatShown],
-        flags: repeat ? ['enabled'] : ['disabled'],
+        flags: repeat ? [] : ['disabled'],
         click: stepRepeat
       }
     ])
